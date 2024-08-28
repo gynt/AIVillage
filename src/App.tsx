@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { ClassAttributes, LegacyRef, forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { atom, getDefaultStore, useAtom, useAtomValue } from 'jotai';
 import { atomFamily } from 'jotai/utils';
@@ -9,6 +9,8 @@ import './App.css'
 import { Group, KonvaNodeComponent, KonvaNodeEvents, Layer, Line, Rect, Stage, StageProps } from 'react-konva';
 import { Toolbar } from './toolbar/Toolbar';
 import { KonvaEventObject } from 'konva/lib/Node';
+import { RectConfig } from 'konva/lib/shapes/Rect';
+import { JSX } from 'react/jsx-runtime';
 
 const randomColor = () => `#${Math.floor(Math.random() * 255).toString(16)}${Math.floor(Math.random() * 255).toString(16)}${Math.floor(Math.random() * 255).toString(16)}`;
 const highlightAtom = atomFamily((id) => atom(randomColor()));
@@ -19,47 +21,23 @@ const selectedObjectAtom = atom<number>(13);
 
 const gridSize = 8;
 
-type GridElementProps = {
-  id: number;
-  // x: number;
-  // y:number;
-  // width: number;
-  // height: number;
-}
-const GridElement = (props: GridElementProps) => {
-  const [color, setColor] = useAtom(highlightAtom(props.id))
-  const { id } = props;
-  // Adding this makes it super slow, event slower than a css grid...
-  const onMouseEnter = () => {
-    // setColor(randomColor())
-    const pos = { x: id % 100, y: ~~(id / 100) };
-    getDefaultStore().set(positionAtom, pos)
-    for (const i of [...Array(getDefaultStore().get(selectedObjectAtom)).keys()]) {
-      for (const j of [...Array(getDefaultStore().get(selectedObjectAtom)).keys()]) {
-        getDefaultStore().set(highlightAtom((pos.x + i) + ((pos.y + j) * 100)), 'green');
-      }
-    }
-  };
-  const obj = useMemo(() => (<Rect fill={color}
-    x={(id % 100) * gridSize}
-    y={(Math.floor(id / 100)) * gridSize}
-    width={gridSize}
-    height={gridSize}
-  // onMouseEnter={onMouseEnter}
-  />), []);
-  return obj;
-}
-
-const ShadowRectangle = (props: any) => {
+const ShadowRectangle = forwardRef((props, ref) => {
   const size = useAtomValue(selectedObjectAtom);
-  return <Rect x={0} y={0} width={gridSize * size} height={gridSize * size}
+  return <Rect
+    ref={ref}
+    id="shadow-rect"
+    x={0}
+    y={0}
+    width={gridSize * size}
+    height={gridSize * size}
     fill={'#FF7B17'}
     opacity={0.6}
     stroke={'#CF6412'}
     strokeWidth={3}
     dash={[20, 2]}
+    visible={false}
     {...props} />
-}
+});
 const ConstructionRectangle = () => {
 
 }
@@ -152,8 +130,8 @@ function App() {
     console.log(sr);
     const { width, height } = e.target.getClientRect();
     const { x: scaleX, y: scaleY } = stageRef.current.getScale();
-    sr.width(width / scaleX);
-    sr.height(height / scaleY);
+    sr.width(Math.floor(width / scaleX));
+    sr.height(Math.floor(height / scaleY));
     sr.show();
     sr.moveToTop();
     e.target.moveToTop()
@@ -165,16 +143,17 @@ function App() {
     const x = e.target.x();
     const y = e.target.y();
 
-    e.target.position({
+    const targetPosition = {
       x: Math.max(0, Math.min((100 * gridSize) - e.target.width(), x)),
       y: Math.max(0, Math.min((100 * gridSize) - e.target.height(), y)),
-    })
+    }
+    e.target.position(targetPosition)
 
     const sr = shadowRectangleRef.current;
 
     sr.position({
-      x: Math.max(0, Math.round(e.target.x() / gridSize) * gridSize),
-      y: Math.max(0, Math.round(e.target.y() / gridSize) * gridSize),
+      x: Math.round(targetPosition.x / gridSize) * gridSize,
+      y: Math.round(targetPosition.y / gridSize) * gridSize,
     })
 
     if (stageRef.current !== null) {
@@ -185,8 +164,8 @@ function App() {
 
   const onRectDragEnd = (e: KonvaEventObject<DragEvent>) => {
     const gridPos = {
-      x: Math.floor(e.target.x() / gridSize),
-      y: Math.floor(e.target.y() / gridSize),
+      x: Math.round(e.target.x() / gridSize),
+      y: Math.round(e.target.y() / gridSize),
     }
     const pos = {
       x: gridPos.x * gridSize,
@@ -246,16 +225,7 @@ function App() {
       }}>
       <GridLayer />
       <Layer      >
-        <Rect
-          id="shadow-rect"
-          x={0} y={0} width={gridSize * objectSize} height={gridSize * objectSize}
-          fill={'#FF7B17'}
-          opacity={0.6}
-          stroke={'#CF6412'}
-          strokeWidth={3}
-          dash={[20, 2]}
-          ref={shadowRectangleRef}
-          visible={false} />
+        <ShadowRectangle ref={shadowRectangleRef} />
         <Rect
           x={10 * gridSize}
           y={10 * gridSize}
