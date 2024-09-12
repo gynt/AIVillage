@@ -1,0 +1,30 @@
+import { Layer, Line } from 'react-konva';
+import { gridSize } from '../common/constants';
+
+export const GridLayer = () => {
+  //https://medium.com/@pierrebleroux/snap-to-grid-with-konvajs-c41eae97c13f
+  const padding = gridSize;
+  const width = gridSize * 100;
+  const height = gridSize * 100;
+  const xlines = [];
+  for (var i = 0; i < width / padding; i++) {
+    xlines.push(<Line
+      points={[Math.round(i * padding) + 0.5, 0, Math.round(i * padding) + 0.5, height]}
+      stroke='#ddd'
+      strokeWidth={1} />);
+  }
+
+
+  const ylines = [];
+  // ylines.push(<Line points={[0, 0, 10, 10]} />);
+  for (var j = 0; j < height / padding; j++) {
+    ylines.push(<Line
+      points={[0, Math.round(j * padding), width, Math.round(j * padding)]}
+      stroke={'#ddd'}
+      strokeWidth={0.5} />);
+  }
+
+  return <Layer>
+    {[...xlines, ...ylines]}
+  </Layer>;
+};

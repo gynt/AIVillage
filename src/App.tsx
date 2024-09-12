@@ -1,80 +1,24 @@
-import { ClassAttributes, LegacyRef, forwardRef, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
-import { atom, getDefaultStore, useAtom, useAtomValue } from 'jotai';
-import { atomFamily } from 'jotai/utils';
+import { getDefaultStore, useAtomValue } from 'jotai';
+import type { Rect as RectType } from 'konva/lib/shapes/Rect'
+import type { Stage as StageType } from 'konva/lib/Stage'
 
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
-import { Group, KonvaNodeComponent, KonvaNodeEvents, Layer, Line, Rect, Stage, StageProps } from 'react-konva';
+import { Group, Layer, Rect, Stage } from 'react-konva';
 import { Toolbar } from './toolbar/Toolbar';
 import { KonvaEventObject } from 'konva/lib/Node';
-import { RectConfig } from 'konva/lib/shapes/Rect';
-import { JSX } from 'react/jsx-runtime';
-
-const randomColor = () => `#${Math.floor(Math.random() * 255).toString(16)}${Math.floor(Math.random() * 255).toString(16)}${Math.floor(Math.random() * 255).toString(16)}`;
-const highlightAtom = atomFamily((id) => atom(randomColor()));
-type Position = { x: number; y: number }
-const positionAtom = atom<Position>()
-
-const selectedObjectAtom = atom<number>(13);
-
-const gridSize = 8;
-
-const ShadowRectangle = forwardRef((props, ref) => {
-  const size = useAtomValue(selectedObjectAtom);
-  return <Rect
-    ref={ref}
-    id="shadow-rect"
-    x={0}
-    y={0}
-    width={gridSize * size}
-    height={gridSize * size}
-    fill={'#FF7B17'}
-    opacity={0.6}
-    stroke={'#CF6412'}
-    strokeWidth={3}
-    dash={[20, 2]}
-    visible={false}
-    {...props} />
-});
-const ConstructionRectangle = () => {
-
-}
-const GridLayer = () => {
-  //https://medium.com/@pierrebleroux/snap-to-grid-with-konvajs-c41eae97c13f
-  const padding = gridSize;
-  const width = gridSize * 100;
-  const height = gridSize * 100;
-  const xlines = []
-  for (var i = 0; i < width / padding; i++) {
-    xlines.push(<Line
-      points={[Math.round(i * padding) + 0.5, 0, Math.round(i * padding) + 0.5, height]}
-      stroke='#ddd'
-      strokeWidth={1}
-    />);
-  }
-
-
-  const ylines = []
-  // ylines.push(<Line points={[0, 0, 10, 10]} />);
-  for (var j = 0; j < height / padding; j++) {
-    ylines.push(<Line
-      points={[0, Math.round(j * padding), width, Math.round(j * padding)]}
-      stroke={'#ddd'}
-      strokeWidth={0.5}
-    />);
-  }
-
-  return <Layer>
-    {[...xlines, ...ylines]}
-  </Layer>
-}
+import { selectedObjectAtom } from './state/state';
+import { positionAtom } from './state/state';
+import { randomColor } from './canvas/colors';
+import { ShadowRectangle } from './canvas/objects/ShadowRectangle';
+import { gridSize } from './common/constants';
+import { GridLayer } from './canvas/GridLayer';
 
 function App() {
-  const divRef = useRef(null)
-  const shadowRectangleRef = useRef<Rect>(null);
-  const stageRef = useRef<Stage>(null);
+  const divRef = useRef<HTMLDivElement>(null)
+  const shadowRectangleRef = useRef<RectType>(null);
+  const stageRef = useRef<StageType>(null);
   const [dimensions, setDimensions] = useState({
     width: gridSize * 100,
     height: gridSize * 100
@@ -103,25 +47,6 @@ function App() {
   const { x, y } = position;
   const objectSize = useAtomValue(selectedObjectAtom)
 
-  // useCallback(() => {
-  //   for(const i of [...Array(objectSize).keys()]) {
-  //     for (const j of [...Array(objectSize).keys()]) {
-  //       getDefaultStore().set(highlightAtom( i + (j*100)), 'green');
-  //     }
-  //   }
-  // }, [])
-
-  // const onMouseEnter = (e) => {
-  //   // setColor(randomColor())
-  //   const pos = {x: id % 100, y: ~~(id / 100)};
-  //   getDefaultStore().set(positionAtom, pos)
-  //   for(const i of [...Array(getDefaultStore().get(selectedObjectAtom)).keys()]) {
-  //     for (const j of [...Array(getDefaultStore().get(selectedObjectAtom)).keys()]) {
-  //       getDefaultStore().set(highlightAtom( (pos.x + i) + ((pos.y + j)*100)), 'green');
-  //     }
-  //   }
-  // };
-
   const onRectDragStart = (e: KonvaEventObject<DragEvent>) => {
     console.log(shadowRectangleRef.current);
     if (shadowRectangleRef.current === null) return;
@@ -129,7 +54,8 @@ function App() {
     const sr = shadowRectangleRef.current;
     console.log(sr);
     const { width, height } = e.target.getClientRect();
-    const { x: scaleX, y: scaleY } = stageRef.current.getScale();
+    // @ts-ignore
+    const { x: scaleX, y: scaleY } = stageRef.current!.getScale();
     sr.width(Math.floor(width / scaleX));
     sr.height(Math.floor(height / scaleY));
     sr.show();
@@ -196,8 +122,10 @@ function App() {
         e.evt.preventDefault();
 
         const stage = stageRef.current;
-        var oldScale = stage.scaleX();
-        var pointer = stage.getPointerPosition();
+        const oldScale = stage.scaleX();
+        const pointer = stage.getPointerPosition();
+
+        if (pointer === null) return;
 
         var mousePointTo = {
           x: (pointer.x - stage.x()) / oldScale,
