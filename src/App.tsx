@@ -24,6 +24,7 @@ function App() {
     height: gridSize * 100
   })
 
+  // Create a responsive canvas
   // https://konvajs.org/docs/sandbox/Responsive_Canvas.html
   useEffect(() => {
     if (stageRef.current !== null && divRef.current !== null) {
@@ -33,13 +34,27 @@ function App() {
       const containerWidth = divRef.current.offsetWidth;
       const containerHeight = divRef.current.offsetHeight;
 
-      const scale = (containerWidth) / sceneWidth;
+      // const scale = (containerWidth) / sceneWidth;
+      // const scale = (containerHeight < containerWidth) ?
+      //   (containerHeight) / sceneHeight :
+      //   (containerWidth) / sceneWidth;
 
-      stageRef.current.width(sceneWidth * scale);
-      stageRef.current.height(sceneHeight * scale)
+      // stageRef.current.width(sceneWidth * scale);
+      // stageRef.current.height(sceneHeight * scale)
 
-      stageRef.current.scale({ x: scale * 0.95, y: scale * 0.95 });
-      stageRef.current.position({ x: 20, y: 20 })
+      // stageRef.current.scale({ x: scale * 0.95, y: scale * 0.95 });
+      // stageRef.current.position({ x: 20, y: 20 })
+
+
+      const scaleWidth = containerWidth / sceneWidth;
+      const scaleHeight = containerHeight / sceneHeight;
+
+      stageRef.current.width(sceneWidth * scaleWidth);
+      // stageRef.current.height(containerHeight)
+
+      stageRef.current.scale({ x: scaleWidth, y: scaleWidth });
+      stageRef.current.position({ x: 0, y: containerHeight / -2 })
+
     }
   }, [])
 
@@ -107,7 +122,7 @@ function App() {
     }
   }
 
-  const scaleBy = 1.20;
+  const scaleBy = 1.05;
   const stage = useMemo(() => (
     <Stage
       scale={{ x: 1, y: 1 }}
@@ -115,6 +130,9 @@ function App() {
       width={dimensions.width} // {dimensions.width}
       height={dimensions.height} // {dimensions.height}
       draggable={true}
+      onDragEnd={(e) => {
+        console.log(stageRef.current?.position())
+      }}
       onWheel={(e) => {
         // stop default scrolling
         if (stageRef.current === null) return;
@@ -236,7 +254,8 @@ function App() {
             paddingLeft: 0,
             paddingRight: 0,
           }}
-          ref={divRef}>
+          ref={divRef}
+          id="stage-container">
           {stage}
         </div>
 
