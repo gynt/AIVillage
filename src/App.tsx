@@ -14,6 +14,7 @@ import { randomColor } from './canvas/colors';
 import { ShadowRectangle } from './canvas/objects/ShadowRectangle';
 import { gridSize } from './common/constants';
 import { GridLayer } from './canvas/GridLayer';
+import { Structure } from './canvas/objects/Structure';
 
 function App() {
   const divRef = useRef<HTMLDivElement>(null)
@@ -130,9 +131,6 @@ function App() {
       width={dimensions.width} // {dimensions.width}
       height={dimensions.height} // {dimensions.height}
       draggable={true}
-      onDragEnd={(e) => {
-        console.log(stageRef.current?.position())
-      }}
       onWheel={(e) => {
         // stop default scrolling
         if (stageRef.current === null) return;
@@ -189,37 +187,7 @@ function App() {
           onDragMove={onRectDragMove}
           onDragEnd={onRectDragEnd}
         />
-        <Group
-          x={50 * gridSize}
-          y={50 * gridSize}
-
-          draggable={true}
-          onDragEnd={onRectDragEnd}
-          onDragStart={onRectDragStart}
-          onDragMove={onRectDragMove}
-        >
-          <Rect
-            x={0}
-            y={0}
-            width={5 * gridSize}
-            height={5 * gridSize}
-            fill={"brown"}
-          />
-          <Rect
-            x={5 * gridSize}
-            y={0}
-            width={5 * gridSize}
-            height={5 * gridSize}
-            fill={"black"}
-          />
-          <Rect
-            x={0}
-            y={5 * gridSize}
-            width={5 * gridSize}
-            height={5 * gridSize}
-            fill={"grey"}
-          />
-        </Group>
+        <Structure shadowRectangleRef={shadowRectangleRef} stageRef={stageRef} />
       </Layer>
     </Stage>
   ), []);
