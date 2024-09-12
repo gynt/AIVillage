@@ -12,11 +12,10 @@ import { useMemo } from 'react';
 
 const CreateOnDragStart = (shadowRectangleRef: React.RefObject<RectType>, stageRef: React.RefObject<StageType>) => {
   return (e: KonvaEventObject<DragEvent>) => {
-    console.log(shadowRectangleRef.current);
     if (shadowRectangleRef.current === null) return;
 
     const sr = shadowRectangleRef.current;
-    console.log(sr);
+
     const { width, height } = e.target.getClientRect();
     // @ts-ignore
     const { x: scaleX, y: scaleY } = stageRef.current!.getScale();
