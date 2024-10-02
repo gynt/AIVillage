@@ -4,11 +4,17 @@ import { KonvaEventObject } from 'konva/lib/Node';
 
 import { Group, Rect } from 'react-konva';
 import { randomColor } from '../colors';
-import { gridSize } from '../../common/constants';
+import { GRID_CELL_COUNT, GRID_CELL_SIZE } from '../../common/constants';
 import { getDefaultStore } from 'jotai';
 import { positionAtom } from '../../state/state';
 import { useMemo } from 'react';
 
+const sanitizeVector = (pos: { x: number, y: number }, width: number, height: number) => {
+  return {
+    x: Math.max(0, Math.min((GRID_CELL_COUNT * GRID_CELL_SIZE) - width, pos.x)),
+    y: Math.max(0, Math.min((GRID_CELL_COUNT * GRID_CELL_SIZE) - height, pos.y)),
+  }
+}
 
 const CreateOnDragStart = (shadowRectangleRef: React.RefObject<RectType>, stageRef: React.RefObject<StageType>) => {
   return (e: KonvaEventObject<DragEvent>) => {
@@ -16,35 +22,30 @@ const CreateOnDragStart = (shadowRectangleRef: React.RefObject<RectType>, stageR
 
     const sr = shadowRectangleRef.current;
 
-    const { width, height } = e.target.getClientRect();
+    const { width, height } = e.target.getClientRect({ skipTransform: false, relativeTo: stageRef.current! });
     // @ts-ignore
     const { x: scaleX, y: scaleY } = stageRef.current!.getScale();
-    sr.width(Math.floor(width / scaleX));
-    sr.height(Math.floor(height / scaleY));
+    sr.width(Math.floor(width));
+    sr.height(Math.floor(height));
     sr.show();
     sr.moveToTop();
-    e.target.moveToTop()
+    e.target.moveToTop();
   };
 }
 
 const CreateOnDragMove = (shadowRectangleRef: React.RefObject<RectType>, stageRef: React.RefObject<StageType>) => {
   return (e: KonvaEventObject<DragEvent>) => {
-    if (shadowRectangleRef.current === null) return;
+    if (shadowRectangleRef.current === null || stageRef.current === null) return;
 
-    const x = e.target.x();
-    const y = e.target.y();
-
-    const targetPosition = {
-      x: Math.max(0, Math.min((100 * gridSize) - e.target.width(), x)),
-      y: Math.max(0, Math.min((100 * gridSize) - e.target.height(), y)),
-    }
-    e.target.position(targetPosition)
+    const { x, y, width, height } = e.target.getClientRect({ skipTransform: false, relativeTo: stageRef.current! });
+    const targetPosition = sanitizeVector({ x, y }, width, height);
+    e.target.position(targetPosition);
 
     const sr = shadowRectangleRef.current;
 
     sr.position({
-      x: Math.round(targetPosition.x / gridSize) * gridSize,
-      y: Math.round(targetPosition.y / gridSize) * gridSize,
+      x: Math.round(targetPosition.x / GRID_CELL_SIZE) * GRID_CELL_SIZE,
+      y: Math.round(targetPosition.y / GRID_CELL_SIZE) * GRID_CELL_SIZE,
     })
 
     if (stageRef.current !== null) {
@@ -56,13 +57,16 @@ const CreateOnDragMove = (shadowRectangleRef: React.RefObject<RectType>, stageRe
 
 const CreateOnDragEnd = (shadowRectangleRef: React.RefObject<RectType>, stageRef: React.RefObject<StageType>) => {
   return (e: KonvaEventObject<DragEvent>) => {
+
+    const scaledRect = e.target.getClientRect({ skipTransform: false, relativeTo: stageRef.current! });
+
     const gridPos = {
-      x: Math.round(e.target.x() / gridSize),
-      y: Math.round(e.target.y() / gridSize),
+      x: Math.round(scaledRect.x / GRID_CELL_SIZE),
+      y: Math.round(scaledRect.y / GRID_CELL_SIZE),
     }
     const pos = {
-      x: gridPos.x * gridSize,
-      y: gridPos.y * gridSize,
+      x: gridPos.x * GRID_CELL_SIZE,
+      y: gridPos.y * GRID_CELL_SIZE,
     }
     e.target.position(pos)
     getDefaultStore().set(positionAtom, gridPos)
@@ -72,6 +76,7 @@ const CreateOnDragEnd = (shadowRectangleRef: React.RefObject<RectType>, stageRef
     if (shadowRectangleRef.current !== null) {
       shadowRectangleRef.current.hide()
     }
+
   }
 }
 
@@ -94,8 +99,8 @@ export const Structure = (props: StructureProps) => {
 
   return (
     <Group
-      x={50 * gridSize}
-      y={50 * gridSize}
+      x={50 * GRID_CELL_SIZE}
+      y={50 * GRID_CELL_SIZE}
       fill={randomColor()}
       draggable={true}
       onDragEnd={onDragEnd}
@@ -105,22 +110,22 @@ export const Structure = (props: StructureProps) => {
       <Rect
         x={0}
         y={0}
-        width={5 * gridSize}
-        height={5 * gridSize}
+        width={5 * GRID_CELL_SIZE}
+        height={5 * GRID_CELL_SIZE}
         fill={"brown"}
       />
       <Rect
-        x={5 * gridSize}
+        x={5 * GRID_CELL_SIZE}
         y={0}
-        width={5 * gridSize}
-        height={5 * gridSize}
+        width={5 * GRID_CELL_SIZE}
+        height={5 * GRID_CELL_SIZE}
         fill={"black"}
       />
       <Rect
         x={0}
-        y={5 * gridSize}
-        width={5 * gridSize}
-        height={5 * gridSize}
+        y={5 * GRID_CELL_SIZE}
+        width={5 * GRID_CELL_SIZE}
+        height={5 * GRID_CELL_SIZE}
         fill={"grey"}
       />
     </Group>

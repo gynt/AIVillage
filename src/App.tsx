@@ -12,7 +12,7 @@ import { selectedObjectAtom } from './state/state';
 import { positionAtom } from './state/state';
 import { randomColor } from './canvas/colors';
 import { ShadowRectangle } from './canvas/objects/ShadowRectangle';
-import { gridSize } from './common/constants';
+import { GRID_CELL_COUNT, GRID_CELL_SIZE } from './common/constants';
 import { GridLayer } from './canvas/GridLayer';
 import { Structure } from './canvas/objects/Structure';
 
@@ -21,15 +21,15 @@ function App() {
   const shadowRectangleRef = useRef<RectType>(null);
   const stageRef = useRef<StageType>(null);
   const [dimensions, setDimensions] = useState({
-    width: gridSize * 100,
-    height: gridSize * 100
+    width: GRID_CELL_SIZE * GRID_CELL_COUNT,
+    height: GRID_CELL_SIZE * GRID_CELL_COUNT
   })
 
   // Create a responsive canvas
   // https://konvajs.org/docs/sandbox/Responsive_Canvas.html
   useEffect(() => {
     if (stageRef.current !== null && divRef.current !== null) {
-      const sceneWidth = 100 * gridSize;
+      const sceneWidth = GRID_CELL_COUNT * GRID_CELL_SIZE;
       const sceneHeight = sceneWidth;
 
       const containerWidth = divRef.current.offsetWidth;
@@ -64,11 +64,10 @@ function App() {
   const objectSize = useAtomValue(selectedObjectAtom)
 
   const onRectDragStart = (e: KonvaEventObject<DragEvent>) => {
-    console.log(shadowRectangleRef.current);
     if (shadowRectangleRef.current === null) return;
 
     const sr = shadowRectangleRef.current;
-    console.log(sr);
+
     const { width, height } = e.target.getClientRect();
     // @ts-ignore
     const { x: scaleX, y: scaleY } = stageRef.current!.getScale();
@@ -86,16 +85,16 @@ function App() {
     const y = e.target.y();
 
     const targetPosition = {
-      x: Math.max(0, Math.min((100 * gridSize) - e.target.width(), x)),
-      y: Math.max(0, Math.min((100 * gridSize) - e.target.height(), y)),
+      x: Math.max(0, Math.min((GRID_CELL_COUNT * GRID_CELL_SIZE) - e.target.width(), x)),
+      y: Math.max(0, Math.min((GRID_CELL_COUNT * GRID_CELL_SIZE) - e.target.height(), y)),
     }
     e.target.position(targetPosition)
 
     const sr = shadowRectangleRef.current;
 
     sr.position({
-      x: Math.round(targetPosition.x / gridSize) * gridSize,
-      y: Math.round(targetPosition.y / gridSize) * gridSize,
+      x: Math.round(targetPosition.x / GRID_CELL_SIZE) * GRID_CELL_SIZE,
+      y: Math.round(targetPosition.y / GRID_CELL_SIZE) * GRID_CELL_SIZE,
     })
 
     if (stageRef.current !== null) {
@@ -106,12 +105,12 @@ function App() {
 
   const onRectDragEnd = (e: KonvaEventObject<DragEvent>) => {
     const gridPos = {
-      x: Math.round(e.target.x() / gridSize),
-      y: Math.round(e.target.y() / gridSize),
+      x: Math.round(e.target.x() / GRID_CELL_SIZE),
+      y: Math.round(e.target.y() / GRID_CELL_SIZE),
     }
     const pos = {
-      x: gridPos.x * gridSize,
-      y: gridPos.y * gridSize,
+      x: gridPos.x * GRID_CELL_SIZE,
+      y: gridPos.y * GRID_CELL_SIZE,
     }
     e.target.position(pos)
     getDefaultStore().set(positionAtom, gridPos)
@@ -171,10 +170,10 @@ function App() {
       <Layer      >
         <ShadowRectangle ref={shadowRectangleRef} />
         <Rect
-          x={10 * gridSize}
-          y={10 * gridSize}
-          width={gridSize * objectSize}
-          height={gridSize * objectSize}
+          x={10 * GRID_CELL_SIZE}
+          y={10 * GRID_CELL_SIZE}
+          width={GRID_CELL_SIZE * objectSize}
+          height={GRID_CELL_SIZE * objectSize}
           draggable={true}
           fill={randomColor()}
           stroke={'#ddd'}

@@ -4,6 +4,7 @@ import { randomColor } from '../canvas/colors';
 import { atomFamily } from "jotai/utils";
 
 
-export const selectedObjectAtom = atom<number>(13); export const positionAtom = atom<Position>();
+export const selectedObjectAtom = atom<number>(13);
+export const positionAtom = atom<Position>();
 const highlightAtom = atomFamily((id) => atom(randomColor()));
 

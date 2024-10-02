@@ -1,11 +1,11 @@
 import { Layer, Line } from 'react-konva';
-import { gridSize } from '../common/constants';
+import { GRID_CELL_COUNT, GRID_CELL_SIZE } from '../common/constants';
 
 export const GridLayer = () => {
   //https://medium.com/@pierrebleroux/snap-to-grid-with-konvajs-c41eae97c13f
-  const padding = gridSize;
-  const width = gridSize * 100;
-  const height = gridSize * 100;
+  const padding = GRID_CELL_SIZE;
+  const width = GRID_CELL_SIZE * GRID_CELL_COUNT;
+  const height = GRID_CELL_SIZE * GRID_CELL_COUNT;
   const xlines = [];
   for (let i = 0; i <= width / padding; i++) {
     xlines.push(<Line
