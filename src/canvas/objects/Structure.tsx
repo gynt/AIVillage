@@ -1,5 +1,6 @@
 import type { Rect as RectType } from 'konva/lib/shapes/Rect'
 import type { Stage as StageType } from 'konva/lib/Stage'
+import type { Group as GroupType } from 'konva/lib/Group'
 import { KonvaEventObject } from 'konva/lib/Node';
 
 import { Group, Rect } from 'react-konva';
@@ -8,6 +9,34 @@ import { GRID_CELL_COUNT, GRID_CELL_SIZE } from '../../common/constants';
 import { getDefaultStore } from 'jotai';
 import { positionAtom } from '../../state/state';
 import { useMemo } from 'react';
+
+const collidesWithAnyOtherStructure = (stage: StageType, a: GroupType) => {
+  const structures = stage.find('.Structure');
+  for (const structure of structures) {
+    if (structure === a) {
+      continue;
+    }
+
+    const b = structure as unknown as GroupType;
+
+    for (const aPart of a.find('.StructureRect')) {
+      const rectA = aPart.getClientRect();
+      for (const bPart of b.find('.StructureRect')) {
+        const rectB = bPart.getClientRect();
+        if (!(rectB.x > rectA.x + rectA.width ||
+          rectB.x + rectB.width < rectA.x ||
+          rectB.y > rectA.y + rectA.height ||
+          rectB.y + rectB.height < rectA.y)) {
+          console.log(rectA, rectB);
+          return true;
+        }
+      }
+    }
+
+
+  }
+  return false;
+}
 
 const sanitizeVector = (pos: { x: number, y: number }, width: number, height: number) => {
   return {
@@ -39,14 +68,21 @@ const CreateOnDragMove = (shadowRectangleRef: React.RefObject<RectType>, stageRe
 
     const { x, y, width, height } = e.target.getClientRect({ skipTransform: false, relativeTo: stageRef.current! });
     const targetPosition = sanitizeVector({ x, y }, width, height);
+
+    if (collidesWithAnyOtherStructure(stageRef.current, e.target as GroupType)) {
+      e.target.stopDrag();
+      return;
+    }
+
     e.target.position(targetPosition);
 
     const sr = shadowRectangleRef.current;
 
-    sr.position({
+    const finalPosition = {
       x: Math.round(targetPosition.x / GRID_CELL_SIZE) * GRID_CELL_SIZE,
       y: Math.round(targetPosition.y / GRID_CELL_SIZE) * GRID_CELL_SIZE,
-    })
+    };
+    sr.position(finalPosition);
 
     if (stageRef.current !== null) {
       stageRef.current.batchDraw()
@@ -106,6 +142,7 @@ export const Structure = (props: StructureProps) => {
       onDragEnd={onDragEnd}
       onDragStart={onDragStart}
       onDragMove={onDragMove}
+      name='Structure'
     >
       <Rect
         x={0}
@@ -113,6 +150,7 @@ export const Structure = (props: StructureProps) => {
         width={5 * GRID_CELL_SIZE}
         height={5 * GRID_CELL_SIZE}
         fill={"brown"}
+        name='StructureRect'
       />
       <Rect
         x={5 * GRID_CELL_SIZE}
@@ -120,6 +158,7 @@ export const Structure = (props: StructureProps) => {
         width={5 * GRID_CELL_SIZE}
         height={5 * GRID_CELL_SIZE}
         fill={"black"}
+        name='StructureRect'
       />
       <Rect
         x={0}
@@ -127,6 +166,7 @@ export const Structure = (props: StructureProps) => {
         width={5 * GRID_CELL_SIZE}
         height={5 * GRID_CELL_SIZE}
         fill={"grey"}
+        name='StructureRect'
       />
     </Group>
   )

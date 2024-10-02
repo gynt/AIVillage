@@ -187,6 +187,7 @@ function App() {
           onDragEnd={onRectDragEnd}
         />
         <Structure shadowRectangleRef={shadowRectangleRef} stageRef={stageRef} />
+        <Structure shadowRectangleRef={shadowRectangleRef} stageRef={stageRef} />
       </Layer>
     </Stage>
   ), []);
