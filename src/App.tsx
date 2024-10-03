@@ -186,8 +186,20 @@ function App() {
           onDragMove={onRectDragMove}
           onDragEnd={onRectDragEnd}
         />
-        <Structure shadowRectangleRef={shadowRectangleRef} stageRef={stageRef} />
-        <Structure shadowRectangleRef={shadowRectangleRef} stageRef={stageRef} />
+        <Structure
+          gridX={50}
+          gridY={50}
+          structureDefinition={[{ x: 0, y: 0, size: 5 }, { x: 5, y: 0, size: 5 }, { x: 0, y: 5, size: 5 },]}
+          shadowRectangleRef={shadowRectangleRef}
+          stageRef={stageRef}
+        />
+        <Structure
+          gridX={10}
+          gridY={10}
+          structureDefinition={[{ x: 0, y: 0, size: 4 }, { x: 4, y: 0, size: 4 },]}
+          shadowRectangleRef={shadowRectangleRef}
+          stageRef={stageRef}
+        />
       </Layer>
     </Stage>
   ), []);

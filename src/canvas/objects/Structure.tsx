@@ -27,7 +27,7 @@ const collidesWithAnyOtherStructure = (stage: StageType, a: GroupType) => {
           rectB.x + rectB.width < rectA.x ||
           rectB.y > rectA.y + rectA.height ||
           rectB.y + rectB.height < rectA.y)) {
-          console.log(rectA, rectB);
+
           return true;
         }
       }
@@ -38,7 +38,14 @@ const collidesWithAnyOtherStructure = (stage: StageType, a: GroupType) => {
   return false;
 }
 
-const sanitizeVector = (pos: { x: number, y: number }, width: number, height: number) => {
+const snap = ({ x, y }: { x: number, y: number }) => {
+  return {
+    x: Math.round(x / GRID_CELL_SIZE) * GRID_CELL_SIZE,
+    y: Math.round(y / GRID_CELL_SIZE) * GRID_CELL_SIZE,
+  }
+}
+
+const applyBounds = (pos: { x: number, y: number }, width: number, height: number) => {
   return {
     x: Math.max(0, Math.min((GRID_CELL_COUNT * GRID_CELL_SIZE) - width, pos.x)),
     y: Math.max(0, Math.min((GRID_CELL_COUNT * GRID_CELL_SIZE) - height, pos.y)),
@@ -67,7 +74,7 @@ const CreateOnDragMove = (shadowRectangleRef: React.RefObject<RectType>, stageRe
     if (shadowRectangleRef.current === null || stageRef.current === null) return;
 
     const { x, y, width, height } = e.target.getClientRect({ skipTransform: false, relativeTo: stageRef.current! });
-    const targetPosition = sanitizeVector({ x, y }, width, height);
+    const targetPosition = applyBounds({ x, y }, width, height);
 
     if (collidesWithAnyOtherStructure(stageRef.current, e.target as GroupType)) {
       // e.target.stopDrag();
@@ -78,10 +85,7 @@ const CreateOnDragMove = (shadowRectangleRef: React.RefObject<RectType>, stageRe
 
     const sr = shadowRectangleRef.current;
 
-    const finalPosition = {
-      x: Math.round(targetPosition.x / GRID_CELL_SIZE) * GRID_CELL_SIZE,
-      y: Math.round(targetPosition.y / GRID_CELL_SIZE) * GRID_CELL_SIZE,
-    };
+    const finalPosition = snap(targetPosition);
     sr.position(finalPosition);
 
     if (stageRef.current !== null) {
@@ -93,10 +97,11 @@ const CreateOnDragMove = (shadowRectangleRef: React.RefObject<RectType>, stageRe
 
 const CreateOnDragEnd = (shadowRectangleRef: React.RefObject<RectType>, stageRef: React.RefObject<StageType>) => {
   return (e: KonvaEventObject<DragEvent>) => {
-    const roundedPos = shadowRectangleRef.current!.getClientRect({ skipTransform: false, relativeTo: stageRef.current! });
+    const shadowPos = shadowRectangleRef.current!.getClientRect({ skipTransform: false, relativeTo: stageRef.current! });
+
+    const roundedPos = snap(shadowPos);
     e.target.position(roundedPos)
-    console.log('onDragEnd', roundedPos);
-    console.log('stage', stageRef.current!.getClientRect());
+
     const gridPos = {
       x: Math.floor(roundedPos.x / GRID_CELL_SIZE),
       y: Math.floor(roundedPos.y / GRID_CELL_SIZE),
@@ -113,10 +118,23 @@ const CreateOnDragEnd = (shadowRectangleRef: React.RefObject<RectType>, stageRef
   }
 }
 
+export type StructureRectangle = {
+  x: number,
+  y: number,
+  size: number,
+}
+
+export type StructureDefinition = StructureRectangle[];
+
 export type StructureProps = {
+  structureID?: string,
+  gridX: number,
+  gridY: number,
+  structureDefinition: StructureDefinition,
   shadowRectangleRef: React.RefObject<RectType>;
   stageRef: React.RefObject<StageType>;
 }
+
 export const Structure = (props: StructureProps) => {
   const { shadowRectangleRef, stageRef } = props;
 
@@ -130,40 +148,33 @@ export const Structure = (props: StructureProps) => {
     return CreateOnDragEnd(shadowRectangleRef, stageRef)
   }, [shadowRectangleRef, stageRef])
 
+  const { gridX, gridY, structureID, structureDefinition } = props;
+
+  const children = structureDefinition.map((sd) =>
+    <Rect
+      // This key is unique because structures can't overlap exactly
+      key={`${gridX}-${gridY}-${structureID}-${sd.x}-${sd.y}-${sd.size}`}
+      x={sd.x * GRID_CELL_SIZE}
+      y={sd.y * GRID_CELL_SIZE}
+      width={sd.size * GRID_CELL_SIZE}
+      height={sd.size * GRID_CELL_SIZE}
+      fill={randomColor()}
+      name='StructureRect'
+    />
+  )
+
   return (
     <Group
-      x={50 * GRID_CELL_SIZE}
-      y={50 * GRID_CELL_SIZE}
+      x={gridX * GRID_CELL_SIZE}
+      y={gridY * GRID_CELL_SIZE}
       draggable={true}
       onDragEnd={onDragEnd}
       onDragStart={onDragStart}
       onDragMove={onDragMove}
       name='Structure'
+      id={structureID !== undefined ? structureID : undefined}
     >
-      <Rect
-        x={0}
-        y={0}
-        width={5 * GRID_CELL_SIZE}
-        height={5 * GRID_CELL_SIZE}
-        fill={"brown"}
-        name='StructureRect'
-      />
-      <Rect
-        x={5 * GRID_CELL_SIZE}
-        y={0}
-        width={5 * GRID_CELL_SIZE}
-        height={5 * GRID_CELL_SIZE}
-        fill={"black"}
-        name='StructureRect'
-      />
-      <Rect
-        x={0}
-        y={5 * GRID_CELL_SIZE}
-        width={5 * GRID_CELL_SIZE}
-        height={5 * GRID_CELL_SIZE}
-        fill={"grey"}
-        name='StructureRect'
-      />
+      {children}
     </Group>
   )
 }
