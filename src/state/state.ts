@@ -1,6 +1,6 @@
 import { atom } from "jotai";
 import { Position } from '../common/Position';
-import { randomColor } from '../canvas/colors';
+import { randomColor } from '../canvas/rendering/colors';
 import { atomFamily } from "jotai/utils";
 
 

@@ -10,11 +10,11 @@ import { Toolbar } from './toolbar/Toolbar';
 import { KonvaEventObject } from 'konva/lib/Node';
 import { selectedObjectAtom } from './state/state';
 import { positionAtom } from './state/state';
-import { randomColor } from './canvas/colors';
+import { randomColor } from './canvas/rendering/colors';
 import { ShadowRectangle } from './canvas/objects/ShadowRectangle';
 import { GRID_CELL_COUNT, GRID_CELL_SIZE } from './common/constants';
-import { GridLayer } from './canvas/GridLayer';
-import { Structure } from './canvas/objects/Structure';
+import { GridLayer } from './canvas/rendering/GridLayer';
+import { Structure } from './canvas/objects/structures/Structure';
 
 function App() {
   const divRef = useRef<HTMLDivElement>(null)

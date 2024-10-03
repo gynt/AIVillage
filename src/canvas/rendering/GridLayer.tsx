@@ -1,5 +1,5 @@
 import { Layer, Line } from 'react-konva';
-import { GRID_CELL_COUNT, GRID_CELL_SIZE } from '../common/constants';
+import { GRID_CELL_COUNT, GRID_CELL_SIZE } from '../../common/constants';
 
 export const GridLayer = () => {
   //https://medium.com/@pierrebleroux/snap-to-grid-with-konvajs-c41eae97c13f
