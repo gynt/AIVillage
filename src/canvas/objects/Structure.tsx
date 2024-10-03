@@ -70,7 +70,7 @@ const CreateOnDragMove = (shadowRectangleRef: React.RefObject<RectType>, stageRe
     const targetPosition = sanitizeVector({ x, y }, width, height);
 
     if (collidesWithAnyOtherStructure(stageRef.current, e.target as GroupType)) {
-      e.target.stopDrag();
+      // e.target.stopDrag();
       return;
     }
 
@@ -93,19 +93,16 @@ const CreateOnDragMove = (shadowRectangleRef: React.RefObject<RectType>, stageRe
 
 const CreateOnDragEnd = (shadowRectangleRef: React.RefObject<RectType>, stageRef: React.RefObject<StageType>) => {
   return (e: KonvaEventObject<DragEvent>) => {
-
-    const scaledRect = e.target.getClientRect({ skipTransform: false, relativeTo: stageRef.current! });
-
+    const roundedPos = shadowRectangleRef.current!.getClientRect({ skipTransform: false, relativeTo: stageRef.current! });
+    e.target.position(roundedPos)
+    console.log('onDragEnd', roundedPos);
+    console.log('stage', stageRef.current!.getClientRect());
     const gridPos = {
-      x: Math.round(scaledRect.x / GRID_CELL_SIZE),
-      y: Math.round(scaledRect.y / GRID_CELL_SIZE),
+      x: Math.floor(roundedPos.x / GRID_CELL_SIZE),
+      y: Math.floor(roundedPos.y / GRID_CELL_SIZE),
     }
-    const pos = {
-      x: gridPos.x * GRID_CELL_SIZE,
-      y: gridPos.y * GRID_CELL_SIZE,
-    }
-    e.target.position(pos)
     getDefaultStore().set(positionAtom, gridPos)
+
     if (stageRef.current !== null) {
       stageRef.current.batchDraw();
     }
@@ -137,7 +134,6 @@ export const Structure = (props: StructureProps) => {
     <Group
       x={50 * GRID_CELL_SIZE}
       y={50 * GRID_CELL_SIZE}
-      fill={randomColor()}
       draggable={true}
       onDragEnd={onDragEnd}
       onDragStart={onDragStart}
