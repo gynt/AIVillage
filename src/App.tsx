@@ -15,6 +15,10 @@ import { ShadowRectangle } from './canvas/objects/ShadowRectangle';
 import { GRID_CELL_COUNT, GRID_CELL_SIZE } from './common/constants';
 import { GridLayer } from './canvas/rendering/GridLayer';
 import { Structure } from './canvas/objects/structures/Structure';
+import { createStructure, StructureType } from './canvas/objects/factory/StructureFactory';
+import { StepControl } from './stepcontrol/StepControl';
+import { CURRENT_AIV_DATA } from './aiv/state';
+import { ConstructionStep } from './aiv/aiv-data';
 
 function App() {
   const divRef = useRef<HTMLDivElement>(null)
@@ -122,6 +126,8 @@ function App() {
     }
   }
 
+  const data = useAtomValue(CURRENT_AIV_DATA);
+
   const scaleBy = 1.05;
   const stage = useMemo(() => (
     <Stage
@@ -169,7 +175,7 @@ function App() {
       <GridLayer />
       <Layer      >
         <ShadowRectangle ref={shadowRectangleRef} />
-        <Rect
+        {/* <Rect
           x={10 * GRID_CELL_SIZE}
           y={10 * GRID_CELL_SIZE}
           width={GRID_CELL_SIZE * objectSize}
@@ -185,7 +191,7 @@ function App() {
           onDragStart={(e) => onRectDragStart(e)}
           onDragMove={onRectDragMove}
           onDragEnd={onRectDragEnd}
-        />
+        /> */}
         <Structure
           gridX={50}
           gridY={50}
@@ -200,6 +206,7 @@ function App() {
           shadowRectangleRef={shadowRectangleRef}
           stageRef={stageRef}
         />
+        {data.steps.filter((s) => s.type === 'construction').map((s) => createStructure(s.object as StructureType, (s as ConstructionStep).tile, shadowRectangleRef, stageRef))}
       </Layer>
     </Stage>
   ), []);
@@ -243,7 +250,8 @@ function App() {
         <div className='col-2' style={{
           width: '10%',
         }}>
-          Test
+          <div>Steps</div>
+          <StepControl />
         </div>
       </div>
       <div className="row" style={{

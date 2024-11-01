@@ -5,6 +5,8 @@ import { KonvaEventObject } from 'konva/lib/Node';
 import { snap } from '../bounds/snap';
 import { applyBounds } from '../bounds/applyBounds';
 import { collidesWithAnyOtherStructure } from '../bounds/collidesWithAnyOtherStructure';
+import { getDefaultStore } from 'jotai';
+import { draggingStep } from './state';
 
 export const CreateOnDragMove = (shadowRectangleRef: React.RefObject<RectType>, stageRef: React.RefObject<StageType>) => {
   return (e: KonvaEventObject<DragEvent>) => {
@@ -19,6 +21,12 @@ export const CreateOnDragMove = (shadowRectangleRef: React.RefObject<RectType>, 
     }
 
     e.target.position(targetPosition);
+
+    const ds = getDefaultStore().get(draggingStep);
+    if (ds !== undefined && ds.type === 'construction') {
+      ds.tile.x = x;
+      ds.tile.y = y;
+    }
 
     const sr = shadowRectangleRef.current;
 

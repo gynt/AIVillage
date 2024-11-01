@@ -5,6 +5,7 @@ import { GRID_CELL_SIZE } from '../../../common/constants';
 import { getDefaultStore } from 'jotai';
 import { positionAtom } from '../../../state/state';
 import { snap } from '../bounds/snap';
+import { draggingStep } from './state';
 
 export const CreateOnDragEnd = (shadowRectangleRef: React.RefObject<RectType>, stageRef: React.RefObject<StageType>) => {
   return (e: KonvaEventObject<DragEvent>) => {
@@ -13,11 +14,21 @@ export const CreateOnDragEnd = (shadowRectangleRef: React.RefObject<RectType>, s
     const roundedPos = snap(shadowPos);
     e.target.position(roundedPos);
 
+    const { x, y } = roundedPos;
+
+    const ds = getDefaultStore().get(draggingStep);
+    if (ds !== undefined && ds.type === 'construction') {
+      ds.tile.x = x;
+      ds.tile.y = y;
+    }
+
     const gridPos = {
       x: Math.floor(roundedPos.x / GRID_CELL_SIZE),
       y: Math.floor(roundedPos.y / GRID_CELL_SIZE),
     };
     getDefaultStore().set(positionAtom, gridPos);
+
+
 
     if (stageRef.current !== null) {
       stageRef.current.batchDraw();

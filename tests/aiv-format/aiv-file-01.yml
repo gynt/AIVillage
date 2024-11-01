@@ -1,9 +1,5 @@
-units:
-  spearmen:
-  - x: 5
-    y: 5
 tiles:
-  x: 5
+- x: 5
   y: 5
   tile: ?
   unit: spearmen
