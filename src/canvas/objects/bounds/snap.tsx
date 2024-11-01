@@ -1,4 +1,4 @@
-import { GRID_CELL_SIZE } from '../../common/constants';
+import { GRID_CELL_SIZE } from '../../../common/constants';
 
 export const snap = ({ x, y }: { x: number; y: number; }) => {
   return {

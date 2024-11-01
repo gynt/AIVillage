@@ -1,0 +1,15 @@
+units:
+  spearmen:
+  - x: 5
+    y: 5
+tiles:
+  x: 5
+  y: 5
+  tile: ?
+  unit: spearmen
+  construction:
+    type: tower1
+    step: 1
+pause-value: 100
+pauses:
+- 1

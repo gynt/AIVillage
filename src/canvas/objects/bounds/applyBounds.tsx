@@ -1,4 +1,4 @@
-import { GRID_CELL_COUNT, GRID_CELL_SIZE } from '../../common/constants';
+import { GRID_CELL_COUNT, GRID_CELL_SIZE } from "../../../common/constants";
 
 export const applyBounds = (pos: { x: number; y: number; }, width: number, height: number) => {
   return {

@@ -2,9 +2,9 @@ import type { Rect as RectType } from 'konva/lib/shapes/Rect';
 import type { Stage as StageType } from 'konva/lib/Stage';
 import type { Group as GroupType } from 'konva/lib/Group';
 import { KonvaEventObject } from 'konva/lib/Node';
-import { collidesWithAnyOtherStructure } from './collidesWithAnyOtherStructure';
-import { snap } from './snap';
-import { applyBounds } from './applyBounds';
+import { snap } from '../bounds/snap';
+import { applyBounds } from '../bounds/applyBounds';
+import { collidesWithAnyOtherStructure } from '../bounds/collidesWithAnyOtherStructure';
 
 export const CreateOnDragMove = (shadowRectangleRef: React.RefObject<RectType>, stageRef: React.RefObject<StageType>) => {
   return (e: KonvaEventObject<DragEvent>) => {

@@ -17,13 +17,17 @@ export type StructureRectangle = {
 
 export type StructureDefinition = StructureRectangle[];
 
-export type StructureProps = {
+export type AbstractStructureProps = {
   structureID?: string,
   gridX: number,
   gridY: number,
-  structureDefinition: StructureDefinition,
   shadowRectangleRef: React.RefObject<RectType>;
   stageRef: React.RefObject<StageType>;
+}
+
+export type StructureProps = AbstractStructureProps & {
+  structureDefinition: StructureDefinition,
+
 }
 
 export const Structure = (props: StructureProps) => {
