@@ -18,7 +18,7 @@ export type StructureRectangle = {
 export type StructureDefinition = StructureRectangle[];
 
 export type AbstractStructureProps = {
-  structureID?: string,
+  structureID: string,
   gridX: number,
   gridY: number,
   shadowRectangleRef: React.RefObject<RectType>;

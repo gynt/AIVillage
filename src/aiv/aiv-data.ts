@@ -37,7 +37,7 @@ export function fromYML(path: string) {
 
 export type ConstructionStep = {
   type: 'construction';
-  object: 'Hovel';
+  object: 'Hovel' | 'Keep';
   tile: {
     x: number;
     y: number;
@@ -53,7 +53,11 @@ export type DefensesStep = {
   }>;
 }
 
-export type Step = ConstructionStep | DefensesStep;
+export type AbstractStep = {
+  id: string;
+}
+
+export type Step = AbstractStep & (ConstructionStep | DefensesStep);
 
 export type AIVData = {
   steps: Array<Step>,

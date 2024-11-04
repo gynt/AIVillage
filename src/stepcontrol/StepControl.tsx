@@ -7,14 +7,14 @@ export function StepControl(props: {}) {
     if (step.type === "construction") {
       return (
         <div>
-          <span>{index} - {step.object}</span>
+          <span>{index} - {step.object} ({step.id})</span>
           <span>@{`${step.tile.x},${step.tile.y}`}</span>
         </div>
       )
     }
     return (
       <div>
-        <span>{index} - {step.object}</span>
+        <span>{index} - {step.object} ({step.id})</span>
         <span>@{step.tiles.map((tile) => `${tile.x},${tile.y}`).join('; ')}</span>
       </div>
     )

@@ -7,6 +7,7 @@ import { applyBounds } from '../bounds/applyBounds';
 import { collidesWithAnyOtherStructure } from '../bounds/collidesWithAnyOtherStructure';
 import { getDefaultStore } from 'jotai';
 import { draggingStep } from './state';
+import { logicalPosition } from '../bounds/logicalPosition';
 
 export const CreateOnDragMove = (shadowRectangleRef: React.RefObject<RectType>, stageRef: React.RefObject<StageType>) => {
   return (e: KonvaEventObject<DragEvent>) => {
@@ -22,16 +23,18 @@ export const CreateOnDragMove = (shadowRectangleRef: React.RefObject<RectType>, 
 
     e.target.position(targetPosition);
 
-    const ds = getDefaultStore().get(draggingStep);
-    if (ds !== undefined && ds.type === 'construction') {
-      ds.tile.x = x;
-      ds.tile.y = y;
-    }
-
     const sr = shadowRectangleRef.current;
 
     const finalPosition = snap(targetPosition);
     sr.position(finalPosition);
+
+    const lp = logicalPosition(targetPosition);
+
+    const ds = getDefaultStore().get(draggingStep);
+    if (ds !== undefined && ds.id === e.target.id() && ds.type === 'construction') {
+      ds.tile.x = lp.x;
+      ds.tile.y = lp.y;
+    }
 
     if (stageRef.current !== null) {
       stageRef.current.batchDraw();

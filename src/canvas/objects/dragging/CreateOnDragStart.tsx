@@ -14,7 +14,7 @@ export const CreateOnDragStart = (shadowRectangleRef: React.RefObject<RectType>,
 
     const { x, y, width, height } = e.target.getClientRect({ skipTransform: false, relativeTo: stageRef.current! });
 
-    const matchingSteps = getDefaultStore().get(CURRENT_AIV_DATA).steps.filter((s) => s.type === 'construction' && s.tile.x == x && s.tile.y == y);
+    const matchingSteps = getDefaultStore().get(CURRENT_AIV_DATA).steps.filter((s) => s.id === e.target.id());
     if (matchingSteps.length !== 1) {
       console.warn(`more than one matching step for: ${x} ${y}`);
     } else {

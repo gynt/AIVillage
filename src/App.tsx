@@ -192,7 +192,7 @@ function App() {
           onDragMove={onRectDragMove}
           onDragEnd={onRectDragEnd}
         /> */}
-        <Structure
+        {/* <Structure
           gridX={50}
           gridY={50}
           structureDefinition={[{ x: 0, y: 0, size: 5 }, { x: 5, y: 0, size: 5 }, { x: 0, y: 5, size: 5 },]}
@@ -200,13 +200,14 @@ function App() {
           stageRef={stageRef}
         />
         <Structure
+        id={}
           gridX={10}
           gridY={10}
           structureDefinition={[{ x: 0, y: 0, size: 4 }, { x: 4, y: 0, size: 4 },]}
           shadowRectangleRef={shadowRectangleRef}
           stageRef={stageRef}
-        />
-        {data.steps.filter((s) => s.type === 'construction').map((s) => createStructure(s.object as StructureType, (s as ConstructionStep).tile, shadowRectangleRef, stageRef))}
+        /> */}
+        {data.steps.filter((s) => s.type === 'construction').map((s) => createStructure(s.id, s.object as StructureType, (s as ConstructionStep).tile, shadowRectangleRef, stageRef))}
       </Layer>
     </Stage>
   ), []);
