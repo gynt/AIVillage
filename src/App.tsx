@@ -15,7 +15,7 @@ import { ShadowRectangle } from './canvas/objects/ShadowRectangle';
 import { GRID_CELL_COUNT, GRID_CELL_SIZE } from './common/constants';
 import { GridLayer } from './canvas/rendering/GridLayer';
 import { Structure } from './canvas/objects/structures/Structure';
-import { createStructure, StructureType } from './canvas/objects/factory/StructureFactory';
+import { StructureFactory, StructureType } from './canvas/objects/factory/StructureFactory';
 import { StepControl } from './stepcontrol/StepControl';
 import { CURRENT_AIV_DATA } from './aiv/state';
 import { ConstructionStep } from './aiv/aiv-data';
@@ -65,66 +65,6 @@ function App() {
 
   const position = useAtomValue(positionAtom) || { x: -1, y: -1 };
   const { x, y } = position;
-  const objectSize = useAtomValue(selectedObjectAtom)
-
-  const onRectDragStart = (e: KonvaEventObject<DragEvent>) => {
-    if (shadowRectangleRef.current === null) return;
-
-    const sr = shadowRectangleRef.current;
-
-    const { width, height } = e.target.getClientRect();
-    // @ts-ignore
-    const { x: scaleX, y: scaleY } = stageRef.current!.getScale();
-    sr.width(Math.floor(width / scaleX));
-    sr.height(Math.floor(height / scaleY));
-    sr.show();
-    sr.moveToTop();
-    e.target.moveToTop()
-  };
-
-  const onRectDragMove = (e: KonvaEventObject<DragEvent>) => {
-    if (shadowRectangleRef.current === null) return;
-
-    const x = e.target.x();
-    const y = e.target.y();
-
-    const targetPosition = {
-      x: Math.max(0, Math.min((GRID_CELL_COUNT * GRID_CELL_SIZE) - e.target.width(), x)),
-      y: Math.max(0, Math.min((GRID_CELL_COUNT * GRID_CELL_SIZE) - e.target.height(), y)),
-    }
-    e.target.position(targetPosition)
-
-    const sr = shadowRectangleRef.current;
-
-    sr.position({
-      x: Math.round(targetPosition.x / GRID_CELL_SIZE) * GRID_CELL_SIZE,
-      y: Math.round(targetPosition.y / GRID_CELL_SIZE) * GRID_CELL_SIZE,
-    })
-
-    if (stageRef.current !== null) {
-      stageRef.current.batchDraw()
-    }
-
-  }
-
-  const onRectDragEnd = (e: KonvaEventObject<DragEvent>) => {
-    const gridPos = {
-      x: Math.round(e.target.x() / GRID_CELL_SIZE),
-      y: Math.round(e.target.y() / GRID_CELL_SIZE),
-    }
-    const pos = {
-      x: gridPos.x * GRID_CELL_SIZE,
-      y: gridPos.y * GRID_CELL_SIZE,
-    }
-    e.target.position(pos)
-    getDefaultStore().set(positionAtom, gridPos)
-    if (stageRef.current !== null) {
-      stageRef.current.batchDraw();
-    }
-    if (shadowRectangleRef.current !== null) {
-      shadowRectangleRef.current.hide()
-    }
-  }
 
   const data = useAtomValue(CURRENT_AIV_DATA);
 
@@ -175,39 +115,15 @@ function App() {
       <GridLayer />
       <Layer      >
         <ShadowRectangle ref={shadowRectangleRef} />
-        {/* <Rect
-          x={10 * GRID_CELL_SIZE}
-          y={10 * GRID_CELL_SIZE}
-          width={GRID_CELL_SIZE * objectSize}
-          height={GRID_CELL_SIZE * objectSize}
-          draggable={true}
-          fill={randomColor()}
-          stroke={'#ddd'}
-          strokeWidth={1}
-          shadowColor='black'
-          shadowBlur={2}
-          shadowOffset={{ x: 1, y: 1 }}
-          shadowOpacity={0.4}
-          onDragStart={(e) => onRectDragStart(e)}
-          onDragMove={onRectDragMove}
-          onDragEnd={onRectDragEnd}
-        /> */}
-        {/* <Structure
-          gridX={50}
-          gridY={50}
-          structureDefinition={[{ x: 0, y: 0, size: 5 }, { x: 5, y: 0, size: 5 }, { x: 0, y: 5, size: 5 },]}
-          shadowRectangleRef={shadowRectangleRef}
-          stageRef={stageRef}
-        />
-        <Structure
-        id={}
-          gridX={10}
-          gridY={10}
-          structureDefinition={[{ x: 0, y: 0, size: 4 }, { x: 4, y: 0, size: 4 },]}
-          shadowRectangleRef={shadowRectangleRef}
-          stageRef={stageRef}
-        /> */}
-        {data.steps.filter((s) => s.type === 'construction').map((s) => createStructure(s.id, s.object as StructureType, (s as ConstructionStep).tile, shadowRectangleRef, stageRef))}
+        {data.steps.filter((s) => s.type === 'construction').map((s) =>
+          <StructureFactory.Structure
+            key={`SF-S-${s.id}`}
+            id={s.id}
+            type={s.object as StructureType}
+            pos={(s as ConstructionStep).tile}
+            shadowRectangleRef={shadowRectangleRef}
+            stageRef={stageRef}
+          />)}
       </Layer>
     </Stage>
   ), []);
